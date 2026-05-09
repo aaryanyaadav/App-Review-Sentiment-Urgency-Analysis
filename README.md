@@ -31,7 +31,7 @@ A multi-task review intelligence system for Google Play Store app reviews that a
 <img src="https://img.shields.io/badge/Pydantic-111827?style=for-the-badge&logo=pydantic&logoColor=E92063" />
 
 </div>
----
+
 ## What This System Does
 
 | Output | Values |

@@ -5,9 +5,8 @@ from nltk.corpus import wordnet
 from nltk.stem import WordNetLemmatizer
 from nltk import pos_tag, word_tokenize
 
-nltk.download('averaged_perceptron_tagger')
-nltk.download('wordnet')
-nltk.download('punkt')
+
+nltk.data.path.append("/opt/render/nltk_data")
 
 
 class TextPreprocessor:

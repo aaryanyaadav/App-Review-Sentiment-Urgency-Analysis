@@ -6,7 +6,10 @@ from nltk.stem import WordNetLemmatizer
 from nltk import pos_tag, word_tokenize
 
 
-nltk.data.path.append("/opt/render/nltk_data")
+import os
+
+if os.path.exists("/opt/render/nltk_data"):
+    nltk.data.path.append("/opt/render/nltk_data")
 
 
 class TextPreprocessor:

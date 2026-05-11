@@ -4,7 +4,7 @@ import nltk
 from nltk.corpus import wordnet
 from nltk.stem import WordNetLemmatizer
 from nltk import pos_tag, word_tokenize
-from tensorflow.keras.preprocessing.sequence import pad_sequences
+
 nltk.download('averaged_perceptron_tagger')
 nltk.download('wordnet')
 nltk.download('punkt')
@@ -26,7 +26,7 @@ class TextPreprocessor:
         else:
             return wordnet.NOUN
 
-#Cleaning the text
+    # Cleaning the text
     def clean(self, text):
         text = str(text).lower()
 
@@ -48,7 +48,7 @@ class TextPreprocessor:
 
         return text if len(text) > 0 else "empty_review"
 
-#Lemmatization
+    # Lemmatization
     def lemmatize(self, text):
         words = word_tokenize(text)
         pos_tags = pos_tag(words)
@@ -65,10 +65,20 @@ class TextPreprocessor:
         text = self.lemmatize(text)
         return text
 
+    # Manual padding function
+    def pad_sequence_manual(self, seq):
+        if len(seq) < self.max_len:
+            seq = seq + [0] * (self.max_len - len(seq))
+        else:
+            seq = seq[:self.max_len]
+
+        return seq
+
     def text_to_sequence(self, text):
         text = self.preprocess(text)
 
-        seq = self.tokenizer.texts_to_sequences([text])
-        seq = pad_sequences(seq, maxlen=self.max_len, padding="post")
+        seq = self.tokenizer.texts_to_sequences([text])[0]
 
-        return seq, text
+        seq = self.pad_sequence_manual(seq)
+
+        return [seq], text

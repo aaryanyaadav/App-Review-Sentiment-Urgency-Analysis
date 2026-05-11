@@ -43,7 +43,16 @@ def health_check():
 @app.post("/analyze")
 def analyze_review(request: ReviewRequest):
 
+    global pipeline, _baseline
+
     try:
+        # Lazy load models only when needed
+        if pipeline is None:
+            pipeline = MainPipeline()
+
+        if _baseline is None:
+            _baseline = BaselineFallback()
+
         # Input validation
         if not request.text or len(request.text.strip()) == 0:
             raise HTTPException(status_code=400, detail="Empty input text")
@@ -65,8 +74,17 @@ def analyze_review(request: ReviewRequest):
     except Exception as e:
         # Try baseline fallback
         try:
+            if _baseline is None:
+                _baseline = BaselineFallback()
+
             fb = _baseline.predict(request.text)
-            return {"success": True, "used_fallback": "baseline", "data": fb}
+
+            return {
+                "success": True,
+                "used_fallback": "baseline",
+                "data": fb
+            }
+
         except Exception:
             return {
                 "success": False,
@@ -84,10 +102,14 @@ def analyze_review(request: ReviewRequest):
             }
 
 
-
 @app.post("/analyze/fallback")
 def analyze_fallback(request: ReviewRequest):
     try:
+        global _baseline
+
+        if _baseline is None:
+            _baseline = BaselineFallback()
+
         fb = _baseline.predict(request.text)
         return {"success": True, "used_fallback": "baseline", "data": fb}
     except Exception as e:

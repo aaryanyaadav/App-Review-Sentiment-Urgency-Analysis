@@ -2,6 +2,7 @@ from fastapi import FastAPI, HTTPException
 from pathlib import Path
 import os
 import sys
+from datetime import datetime
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 if str(PROJECT_ROOT) not in sys.path:
@@ -115,6 +116,13 @@ def analyze_fallback(request: ReviewRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Fallback failed: {e}")
 
+@app.get("/ping")
+def ping():
+
+    return {
+        "status": "alive",
+        "timestamp": str(datetime.utcnow())
+    }
 
 if __name__ == "__main__":
     import uvicorn

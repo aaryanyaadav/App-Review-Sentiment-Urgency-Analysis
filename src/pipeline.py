@@ -73,13 +73,8 @@ class MainPipeline:
             tfidf_dim=tfidf_dim,
             hidden_dim=128,
             num_sent=len(self.sent_encoder.classes_),
-            num_urg=len(self.urg_encoder.classes_)
-        )
-
-        # Embedding Layer
-        self.model.embedding = torch.nn.Embedding(
-            vocab_size,
-            100
+            num_urg=len(self.urg_encoder.classes_),
+            vocab_size=vocab_size
         )
 
         # Load Weights

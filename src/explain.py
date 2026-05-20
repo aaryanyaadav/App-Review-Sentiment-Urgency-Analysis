@@ -1,44 +1,61 @@
-import numpy as np
 class Explainer:
-    def __init__(self, tokenizer):
-        self.tokenizer = tokenizer
-        self.index_word = {v: k for k, v in tokenizer.word_index.items()}
 
-    def explain(self, text, attention_weights, seq, top_k=2):  #we  provide the text ,attention weights , sequence and the top words 
+    def __init__(self, word_index):
+
+        # Reverse mapping
+        self.index_word = {
+            v: k for k, v in word_index.items()
+        }
+
+    def explain(
+        self,
+        text,
+        attention_weights,
+        seq,
+        top_k=2
+    ):
 
         # Convert attention tensor → numpy
-        attn = attention_weights.squeeze().detach().cpu().numpy()
+        attn = (
+            attention_weights
+            .squeeze(-1)
+            .squeeze(0)
+            .detach()
+            .cpu()
+            .numpy()
+        )
 
-        tokens = seq[0]  # padded sequence
+        # Sequence tokens
+        tokens = seq[0]
 
-        word_attention = []
+        word_scores = []
 
-        for i, token_id in enumerate(tokens):
+        for idx, token_id in enumerate(tokens):
+
+            # Skip padding
             if token_id == 0:
-                continue  # skip the padding
+                continue
 
-            if i >= len(attn):
-                break
+            word = self.index_word.get(
+                token_id,
+                "<UNK>"
+            )
 
-            word = self.index_word.get(token_id, "")
+            score = float(attn[idx])
 
-            if word != "":
-                word_attention.append({
-                    "word": word,
-                    "score": float(attn[i])
-                })
+            word_scores.append({
+                "word": word,
+                "score": score
+            })
 
-        #sorting the words by attention 
-        word_attention = sorted(
-            word_attention,
+        # Sort by attention score
+        word_scores = sorted(
+            word_scores,
             key=lambda x: x["score"],
             reverse=True
         )
 
-        # the top words
-        top_words = word_attention[:top_k]
-
         return {
-            "top_words": top_words
-            
+            "top_words": word_scores[:top_k],
+            "method": "attention"
         }

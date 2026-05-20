@@ -1,35 +1,41 @@
 #import
 import re
 import nltk
+import os
+
 from nltk.corpus import wordnet
 from nltk.stem import WordNetLemmatizer
 from nltk import pos_tag, word_tokenize
-
-
-import os
 
 if os.path.exists("/opt/render/nltk_data"):
     nltk.data.path.append("/opt/render/nltk_data")
 
 
 class TextPreprocessor:
-    def __init__(self, tokenizer, max_len=100):
-        self.tokenizer = tokenizer
+
+    def __init__(self, word_index, max_len=100):
+
+        self.word_index = word_index
         self.max_len = max_len
         self.lemmatizer = WordNetLemmatizer()
 
     def get_wordnet_pos(self, tag):
+
         if tag.startswith('J'):
             return wordnet.ADJ
+
         elif tag.startswith('V'):
             return wordnet.VERB
+
         elif tag.startswith('R'):
             return wordnet.ADV
+
         else:
             return wordnet.NOUN
 
-    # Cleaning the text
+    # Cleaning
     def clean(self, text):
+
         text = str(text).lower()
 
         # Remove URLs
@@ -52,34 +58,50 @@ class TextPreprocessor:
 
     # Lemmatization
     def lemmatize(self, text):
+
         words = word_tokenize(text)
+
         pos_tags = pos_tag(words)
 
         lemmatized = [
-            self.lemmatizer.lemmatize(word, self.get_wordnet_pos(tag))
+            self.lemmatizer.lemmatize(
+                word,
+                self.get_wordnet_pos(tag)
+            )
             for word, tag in pos_tags
         ]
 
         return " ".join(lemmatized)
 
     def preprocess(self, text):
+
         text = self.clean(text)
         text = self.lemmatize(text)
+
         return text
 
-    # Manual padding function
+    # Manual padding
     def pad_sequence_manual(self, seq):
+
         if len(seq) < self.max_len:
             seq = seq + [0] * (self.max_len - len(seq))
+
         else:
             seq = seq[:self.max_len]
 
         return seq
 
+    # Convert text → sequence
     def text_to_sequence(self, text):
+
         text = self.preprocess(text)
 
-        seq = self.tokenizer.texts_to_sequences([text])[0]
+        words = text.split()
+
+        seq = [
+            self.word_index.get(word, 1)
+            for word in words
+        ]
 
         seq = self.pad_sequence_manual(seq)
 

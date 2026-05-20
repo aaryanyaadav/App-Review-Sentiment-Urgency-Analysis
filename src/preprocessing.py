@@ -59,7 +59,7 @@ class TextPreprocessor:
     # Lemmatization
     def lemmatize(self, text):
 
-        words = word_tokenize(text)
+        words = text.split()
 
         pos_tags = pos_tag(words)
 

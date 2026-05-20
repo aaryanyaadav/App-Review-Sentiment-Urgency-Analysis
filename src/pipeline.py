@@ -10,8 +10,9 @@ import pickle
 from pathlib import Path
 import nltk
 
-# Use Render NLTK data path
-nltk.data.path.append("/opt/render/nltk_data")
+# Render NLTK path
+if os.path.exists("/opt/render/nltk_data"):
+    nltk.data.path.append("/opt/render/nltk_data")
 
 from src.preprocessing import TextPreprocessor
 from src.priority import PriorityScorer
@@ -23,22 +24,22 @@ from src.hybrid_model.hybrid_model import HybridModel
 
 
 class MainPipeline:
+
     def __init__(self, model_path="models/hybrid/"):
 
         print("Initializing MainPipeline...")
 
         model_dir = Path(model_path)
 
-        # -----------------------------
-        # Load tokenizer & vectorizer
-        # -----------------------------
-        print("Loading tokenizer...")
+        # Load Word Index
+        print("Loading word index...")
 
-        with open(model_dir / "tokenizer.pkl", "rb") as f:
-            self.tokenizer = pickle.load(f)
+        with open(model_dir / "word_index.pkl", "rb") as f:
+            self.word_index = pickle.load(f)
 
-        print("Tokenizer loaded.")
+        print("Word index loaded.")
 
+        # Load TF-IDF
         print("Loading TF-IDF vectorizer...")
 
         with open(model_dir / "tfidf_vectorizer.pkl", "rb") as f:
@@ -46,6 +47,7 @@ class MainPipeline:
 
         print("TF-IDF loaded.")
 
+        # Load Encoders
         print("Loading encoders...")
 
         with open(model_dir / "sent_encoder.pkl", "rb") as f:
@@ -56,14 +58,16 @@ class MainPipeline:
 
         print("Encoders loaded.")
 
-        # -----------------------------
-        # Rebuild model architecture
-        # -----------------------------
-        tfidf_dim = len(self.tfidf.get_feature_names_out())
-        vocab_size = len(self.tokenizer.word_index) + 1
+        # Model Config
+        tfidf_dim = len(
+            self.tfidf.get_feature_names_out()
+        )
+
+        vocab_size = len(self.word_index) + 2
 
         print("Building model architecture...")
 
+        # Create Model
         self.model = HybridModel(
             embedding_matrix=None,
             tfidf_dim=tfidf_dim,
@@ -72,12 +76,13 @@ class MainPipeline:
             num_urg=len(self.urg_encoder.classes_)
         )
 
-        # Embedding layer
-        self.model.embedding = torch.nn.Embedding(vocab_size, 100)
+        # Embedding Layer
+        self.model.embedding = torch.nn.Embedding(
+            vocab_size,
+            100
+        )
 
-        # -----------------------------
-        # Load model weights
-        # -----------------------------
+        # Load Weights
         print("Loading model weights...")
 
         self.model.load_state_dict(
@@ -91,36 +96,52 @@ class MainPipeline:
 
         print("Model loaded successfully!")
 
-        # -----------------------------
-        # Initialize modules
-        # -----------------------------
-        self.preprocessor = TextPreprocessor(self.tokenizer)
+        # Modules
+        self.preprocessor = TextPreprocessor(
+            self.word_index
+        )
+
         self.priority = PriorityScorer()
+
         self.aspect = AspectDetector()
-        self.explainer = Explainer(self.tokenizer)
+
+        self.explainer = Explainer(
+            self.word_index
+        )
 
         print("Pipeline initialized successfully!")
 
+    # Predict
     def predict(self, text):
 
         # Preprocessing
         seq, clean_text = self.preprocessor.text_to_sequence(text)
 
-        # TF-IDF vector
-        tfidf_vec = self.tfidf.transform([clean_text]).toarray()
+        # TF-IDF
+        tfidf_vec = self.tfidf.transform(
+            [clean_text]
+        ).toarray()
 
-        # Convert to tensors
-        seq_tensor = torch.tensor(seq, dtype=torch.long)
-        tfidf_tensor = torch.tensor(tfidf_vec, dtype=torch.float32)
+        # Tensor Conversion
+        seq_tensor = torch.tensor(
+            seq,
+            dtype=torch.long
+        )
 
-        # Model inference
+        tfidf_tensor = torch.tensor(
+            tfidf_vec,
+            dtype=torch.float32
+        )
+
+        # Inference
         with torch.no_grad():
+
             sent_out, urg_out, attn_weights = self.model(
                 seq_tensor,
                 tfidf_tensor
             )
 
-        # Decode predictions
+        # Decode
         sentiment = self.sent_encoder.inverse_transform(
             [sent_out.argmax().item()]
         )[0]
@@ -129,21 +150,38 @@ class MainPipeline:
             [urg_out.argmax().item()]
         )[0]
 
-        return sentiment, urgency, attn_weights, clean_text, seq
+        return (
+            sentiment,
+            urgency,
+            attn_weights,
+            clean_text,
+            seq
+        )
 
+
+    # Full Pipeline
     def run(self, text):
 
-        sentiment, urgency, attn, clean_text, seq = self.predict(text)
+        (
+            sentiment,
+            urgency,
+            attn,
+            clean_text,
+            seq
 
-        # Priority scoring
+        ) = self.predict(text)
+
+        # Priority
         priority = self.priority.compute(
             sentiment,
             urgency,
             clean_text
         )
 
-        # Aspect detection
-        aspects = self.aspect.detect(clean_text)
+        # Aspect Detection
+        aspects = self.aspect.detect(
+            clean_text
+        )
 
         # Explainability
         explanation = self.explainer.explain(
@@ -163,6 +201,7 @@ class MainPipeline:
         }
 
 
+# Manual Testing
 if __name__ == "__main__":
 
     pipeline = MainPipeline()
@@ -185,4 +224,8 @@ if __name__ == "__main__":
         print("\nImportant Words:")
 
         for w in result["explanation"]["top_words"]:
-            print(f"  {w['word']} ({w['score']:.4f})")
+
+            print(
+                f"  {w['word']} "
+                f"({w['score']:.4f})"
+            )

@@ -3,9 +3,7 @@ import re
 import nltk
 import os
 
-from nltk.corpus import wordnet
 from nltk.stem import WordNetLemmatizer
-from nltk import pos_tag
 if os.path.exists("/opt/render/nltk_data"):
     nltk.data.path.append("/opt/render/nltk_data")
 
@@ -17,20 +15,6 @@ class TextPreprocessor:
         self.word_index = word_index
         self.max_len = max_len
         self.lemmatizer = WordNetLemmatizer()
-
-    def get_wordnet_pos(self, tag):
-
-        if tag.startswith('J'):
-            return wordnet.ADJ
-
-        elif tag.startswith('V'):
-            return wordnet.VERB
-
-        elif tag.startswith('R'):
-            return wordnet.ADV
-
-        else:
-            return wordnet.NOUN
 
     # Cleaning
     def clean(self, text):
@@ -60,14 +44,9 @@ class TextPreprocessor:
 
         words = text.split()
 
-        pos_tags = pos_tag(words)
-
         lemmatized = [
-            self.lemmatizer.lemmatize(
-                word,
-                self.get_wordnet_pos(tag)
-            )
-            for word, tag in pos_tags
+            self.lemmatizer.lemmatize(word)
+            for word in words
         ]
 
         return " ".join(lemmatized)

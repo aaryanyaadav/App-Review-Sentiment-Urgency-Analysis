@@ -11,8 +11,9 @@ from pathlib import Path
 import nltk
 
 # Render NLTK path
-if os.path.exists("/opt/render/nltk_data"):
-    nltk.data.path.append("/opt/render/nltk_data")
+base_dir = Path(__file__).resolve().parent
+local_nltk_path = base_dir / "src" / "nltk_data"
+nltk.data.path.append(str(local_nltk_path))
 
 from src.preprocessing import TextPreprocessor
 from src.priority import PriorityScorer

@@ -7,6 +7,8 @@ import nltk
 base_dir = os.path.dirname(os.path.abspath(__file__))
 local_nltk_path = os.path.join(base_dir, "nltk_data")
 
+if local_nltk_path not in nltk.data.path:
+    nltk.data.path.append(local_nltk_path)
 nltk.data.path.append(local_nltk_path)
 
 from nltk.stem import WordNetLemmatizer

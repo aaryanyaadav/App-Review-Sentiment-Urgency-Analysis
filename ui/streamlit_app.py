@@ -17,7 +17,7 @@ st.set_page_config(
 
 
 # Title
-st.title("📱 Application Review Analyzer")
+st.title("Application Review Analyzer")
 
 st.markdown(
     "Analyze app reviews for sentiment, urgency, "

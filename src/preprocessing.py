@@ -1,13 +1,15 @@
 #import
 import re
-import nltk
 import os
+import nltk
+
+
+base_dir = os.path.dirname(os.path.abspath(__file__))
+local_nltk_path = os.path.join(base_dir, "nltk_data")
+
+nltk.data.path.append(local_nltk_path)
 
 from nltk.stem import WordNetLemmatizer
-if os.path.exists("/opt/render/nltk_data"):
-    nltk.data.path.append("/opt/render/nltk_data")
-
-
 class TextPreprocessor:
 
     def __init__(self, word_index, max_len=100):

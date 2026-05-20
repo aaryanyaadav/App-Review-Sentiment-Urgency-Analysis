@@ -2,7 +2,7 @@ import streamlit as st
 import requests
 import pandas as pd
 
-API_URL = "http://127.0.0.1:8000/analyze"
+API_URL = "https://app-review-sentiment-and-urgency-analysis.onrender.com/analyze"
 
 st.set_page_config(
     page_title="Application Review Analysis",

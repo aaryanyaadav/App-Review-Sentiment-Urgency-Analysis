@@ -5,8 +5,7 @@ import os
 
 from nltk.corpus import wordnet
 from nltk.stem import WordNetLemmatizer
-from nltk import pos_tag, word_tokenize
-
+from nltk import pos_tag
 if os.path.exists("/opt/render/nltk_data"):
     nltk.data.path.append("/opt/render/nltk_data")
 

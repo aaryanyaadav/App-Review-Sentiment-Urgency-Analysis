@@ -5,7 +5,7 @@ import pandas as pd
 
 # API URL
 
-API_URL = "https://app-review-sentiment-and-urgency-analysis.onrender.com/analyze"
+API_URL = "https://yadavaryan-app-review-sentiment-analysis.hf.space/analyze"
 
 
 # Page Config

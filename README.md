@@ -13,7 +13,6 @@ A multi-task review intelligence system for Google Play Store app reviews that a
 
 <img src="https://img.shields.io/badge/Python-111827?style=for-the-badge&logo=python&logoColor=yellow" />
 <img src="https://img.shields.io/badge/PyTorch-111827?style=for-the-badge&logo=pytorch&logoColor=red" />
-<img src="https://img.shields.io/badge/TensorFlow-111827?style=for-the-badge&logo=tensorflow&logoColor=orange" />
 <img src="https://img.shields.io/badge/scikit--learn-111827?style=for-the-badge&logo=scikit-learn&logoColor=orange" />
 
 <br><br>
